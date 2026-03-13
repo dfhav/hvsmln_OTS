@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Media Expert - OTS Calculator</title>
+    <title>Media Expert - OTS & Reach 3+ Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .channel-card { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; background: #f9fafb; transition: all 0.3s; }
@@ -19,7 +19,7 @@
         <header class="flex justify-between items-center border-b pb-6 mb-8">
             <div>
                 <h1 class="text-3xl font-extrabold text-red-600 tracking-tight hover:text-red-700 transition-colors duration-200">Media - <span class="text-red-600">OTS Optimizer</span></h1>
-                <p class="text-slate-500 mt-1">Strumento per la stima della frequenza cross-media (Modello Agostini).</p>
+                <p class="text-slate-500 mt-1">Strumento per la stima della frequenza e della Reach Effettiva (3+).</p>
             </div>
             <button onclick="toggleModal('infoModal')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-3 rounded-full transition shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -28,7 +28,7 @@
             </button>
         </header>
 
-      <section class="mb-10 bg-red-50 p-6 rounded-xl border border-red-100">
+        <section class="mb-10 bg-red-50 p-6 rounded-xl border border-red-100">
             <h2 class="text-sm font-bold text-red-800 uppercase tracking-wider mb-4">Parametri del Piano</h2>
             <div class="flex flex-col md:flex-row md:items-center gap-4">
                 <div class="w-full max-w-xs">
@@ -39,14 +39,12 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                         </span>
-                        
                         <select id="flightWeeks" class="w-full pl-10 pr-10 p-3 bg-white border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 outline-none appearance-none cursor-pointer">
                             <option value="1">1 Settimana</option>
                             <option value="2">2 Settimane</option>
                             <option value="3">3 Settimane</option>
                             <option value="4" selected>4 Settimane</option>
                         </select>
-
                         <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -54,11 +52,8 @@
                         </span>
                     </div>
                 </div>
-                
                 <div class="flex-1">
-                    <p class="text-xs text-slate-500 italic mt-2 md:mt-6">
-                        L'alert di saturazione si attiverà in base al flight
-                    </p>
+                    <p class="text-xs text-slate-500 italic mt-2 md:mt-6">L'alert di saturazione si attiverà in base al flight</p>
                 </div>
             </div>
         </section>
@@ -66,21 +61,30 @@
         <div id="channelsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10"></div>
 
         <div class="flex flex-col items-center border-t pt-8">
-            <button onclick="calculateOTS()" class="bg-red-600 text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-red-700 transition-all transform hover:scale-105 shadow-lg shadow-red-200">
-                CALCOLA PERFORMANCE PIANO
-            </button>
+            <div class="flex flex-col md:flex-row gap-4 items-center mb-8">
+                <button onclick="calculateOTS()" class="bg-red-600 text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-red-700 transition-all transform hover:scale-105 shadow-lg shadow-red-200">
+                    CALCOLA PERFORMANCE PIANO
+                </button>
+                <button onclick="resetFields()" class="text-slate-400 hover:text-red-600 font-semibold text-sm transition-colors">
+                    Pulisci tutto
+                </button>
+            </div>
 
-            <div id="resultArea" class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 w-full opacity-0 transition-opacity duration-500">
+            <div id="resultArea" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full opacity-0 transition-opacity duration-500">
                 <div class="bg-slate-50 p-6 rounded-xl text-center border border-slate-100">
                     <p class="text-xs uppercase text-slate-500 font-bold mb-1">Total GRPs</p>
                     <p id="resGRP" class="text-4xl font-black text-slate-800">0</p>
                 </div>
                 <div class="bg-slate-50 p-6 rounded-xl text-center border border-slate-100">
-                    <p class="text-xs uppercase text-slate-500 font-bold mb-1">Net Reach %</p>
+                    <p class="text-xs uppercase text-slate-500 font-bold mb-1">Net Reach (1+)</p>
                     <p id="resReach" class="text-4xl font-black text-slate-800">0%</p>
                 </div>
+                <div class="bg-blue-600 p-6 rounded-xl text-center shadow-lg border-b-4 border-blue-800">
+                    <p class="text-xs uppercase text-blue-100 font-bold mb-1">Reach Effettiva (3+)</p>
+                    <p id="resReach3" class="text-4xl font-black text-white">0%</p>
+                </div>
                 <div id="otsCard" class="bg-red-600 p-6 rounded-xl text-center shadow-lg">
-                    <p class="text-xs uppercase text-red-100 font-bold mb-1">OTS Totale Piano</p>
+                    <p class="text-xs uppercase text-red-100 font-bold mb-1">OTS Totale</p>
                     <p id="resOTS" class="text-4xl font-black text-white">0</p>
                 </div>
             </div>
@@ -89,20 +93,18 @@
 
     <div id="infoModal" class="modal">
         <div class="modal-content shadow-2xl border-t-4 border-red-600 max-h-[90vh] overflow-y-auto">
-            <h2 class="text-2xl font-bold mb-4 text-slate-900">Analisi Tecnica e Metodologia</h2>
-            <div class="space-y-4 text-slate-600 leading-relaxed">
-                <p><strong>1. Modello di Agostini (Random Duplication):</strong> In assenza di matrici di duplicazione reali, il sistema utilizza la probabilità composta per calcolare la Reach Netta. La formula assume che l'esposizione tra i canali sia indipendente.</p>
-                <p><strong>2. Gerarchia dei Dati:</strong> Il tool dà priorità ai GRP per il calcolo della pressione. In assenza di GRP e Reach, utilizza l'OTS diretta moltiplicandola per pesi standard di Reach incrementale stimata per canale.</p>
-                <p><strong>3. Calcolo del Peso (Weighting):</strong> I pesi applicati modificano l'impatto dei GRP sulla frequenza finale.</p>
-                <p><strong>4. Raccomandazione Strategica:</strong> Usa il campo "Peso Canale" per riflettere la qualità dell'Inventory. Se pianifichi YouTube Unskippable o Prime Time TV, sposta il peso a 1.2 o 1.3. Se pianifichi Social Display a basso impatto, riduci il peso a 0.8.</p>
-                
-                <div class="bg-amber-50 p-4 rounded-lg border border-amber-100 mt-6">
-                    <h3 class="font-bold text-amber-800 mb-2 text-sm uppercase">Rischi di Saturazione (Wear-out)</h3>
-                    <ul class="list-disc pl-5 text-sm space-y-1 text-amber-900">
-                        <li><strong>1 Settimana:</strong> Saturazione sopra OTS 4-5</li>
-                        <li><strong>2 Settimane:</strong> Saturazione sopra OTS 7-8</li>
-                        <li><strong>3 Settimane:</strong> Saturazione sopra OTS 10-12</li>
-                        <li><strong>4 Settimane:</strong> Saturazione sopra OTS 12-15</li>
+            <h2 class="text-2xl font-bold mb-4 text-slate-900">Metodologia di Calcolo</h2>
+            <div class="space-y-4 text-slate-600 leading-relaxed text-sm">
+                <p><strong>Reach Netta (1+):</strong> Calcolata tramite il modello di Agostini (Random Duplication), ipotizzando che l'esposizione tra canali sia indipendente.</p>
+                <p><strong>Reach Effettiva (3+):</strong> Stimata tramite la <em>Distribuzione di Poisson</em>. Rappresenta la percentuale di target esposta almeno 3 volte. È il vero KPI per la memorizzazione del messaggio.</p>
+                <p><strong>Frequenza (OTS):</strong> Rapporto tra la pressione totale (GRPs pesati) e la Reach Netta.</p>
+                <div class="bg-amber-50 p-4 rounded-lg border border-amber-100">
+                    <h3 class="font-bold text-amber-800 mb-2 uppercase text-xs">Soglie di Saturazione OTS</h3>
+                    <ul class="grid grid-cols-2 gap-2 text-xs text-amber-900">
+                        <li>1 Settimana: > 5</li>
+                        <li>2 Settimane: > 8</li>
+                        <li>3 Settimane: > 11</li>
+                        <li>4 Settimane: > 14</li>
                     </ul>
                 </div>
             </div>
@@ -112,7 +114,6 @@
 
     <script>
         const channels = ["TV", "CTV", "OOH", "Radio", "Cinema", "Social", "Spotify", "Facebook", "Instagram", "Youtube", "TikTok", "Podcast"];
-        
         const channelIcons = {
             "TV": `<svg viewBox="0 0 24 24"><path d="M21,17H3V5H21M21,3H3A2,2 0 0,0 1,5V17A2,2 0 0,0 3,19H8V21H16V19H21A2,2 0 0,0 23,17V5A2,2 0 0,0 21,3Z"/></svg>`,
             "CTV": `<svg viewBox="0 0 24 24"><path d="M21,17H3V5H21M21,3H3A2,2 0 0,0 1,5V17A2,2 0 0,0 3,19H8V21H16V19H21A2,2 0 0,0 23,17V5A2,2 0 0,0 21,3M10,8V14L15,11L10,8Z"/></svg>`,
@@ -129,7 +130,6 @@
         };
 
         const container = document.getElementById('channelsContainer');
-
         channels.forEach(ch => {
             const icon = channelIcons[ch] || '';
             container.innerHTML += `
@@ -159,6 +159,18 @@
         function toggleModal(id) {
             const m = document.getElementById(id);
             m.style.display = (m.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function resetFields() {
+            if(confirm("Vuoi svuotare tutti i campi?")) {
+                document.querySelectorAll('input[type="number"]').forEach(input => input.value = '');
+                document.querySelectorAll('input[type="range"]').forEach(range => {
+                    range.value = 1.0;
+                    const ch = range.getAttribute('data-channel');
+                    document.getElementById(`val-${ch}`).innerText = "1.0";
+                });
+                document.getElementById('resultArea').style.opacity = "0";
+            }
         }
 
         function calculateOTS() {
@@ -193,7 +205,7 @@
             });
 
             if (activeChannels === 0) {
-                alert("Per favore, inserisci i dati di almeno un canale per procedere.");
+                alert("Per favore, inserisci i dati di almeno un canale.");
                 return;
             }
 
@@ -201,14 +213,28 @@
             if (netReach > 94) netReach = 94;
             const finalOTS = totalGRPs / netReach;
 
+            // Calcolo Reach 3+ basato su Distribuzione di Poisson
+            function estimate3Plus(r1, ots) {
+                if (ots < 1.5) return r1 * 0.1; 
+                const lambda = ots;
+                const p0 = Math.exp(-lambda);
+                const p1 = lambda * Math.exp(-lambda);
+                const p2 = (Math.pow(lambda, 2) / 2) * Math.exp(-lambda);
+                const factor3Plus = 1 - (p0 + p1 + p2);
+                return r1 * Math.min(factor3Plus * 1.3, 0.92);
+            }
+
+            const reach3Plus = estimate3Plus(netReach, finalOTS);
+
+            // Update UI
             document.getElementById('resGRP').innerText = Math.round(totalGRPs);
             document.getElementById('resReach').innerText = netReach.toFixed(1) + "%";
+            document.getElementById('resReach3').innerText = reach3Plus.toFixed(1) + "%";
             document.getElementById('resOTS').innerText = finalOTS.toFixed(2);
             document.getElementById('resultArea').style.opacity = "1";
 
             const thresholds = { 1: 5, 2: 8, 3: 11, 4: 14 };
             if (finalOTS > thresholds[weeks]) {
-                alert(`⚠️ ATTENZIONE: SATURAZIONE\n\nOTS ${finalOTS.toFixed(2)} supera la soglia di efficienza per ${weeks} settiman${weeks==1?'a':'e'}.`);
                 document.getElementById('otsCard').classList.replace('bg-red-600', 'bg-amber-500');
             } else {
                 document.getElementById('otsCard').classList.replace('bg-amber-500', 'bg-red-600');
