@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OTS Calculator </title>
+    <title>Media Expert - OTS Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .channel-card { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; background: #f9fafb; transition: all 0.3s; }
         .channel-card:hover { border-color: #dc2626; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
         .modal { display: none; position: fixed; z-index: 50; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
         .modal-content { background: white; margin: 5% auto; padding: 2rem; width: 80%; max-width: 700px; border-radius: 1rem; }
+        .icon-container svg { width: 18px; height: 18px; fill: currentColor; }
     </style>
 </head>
 <body class="bg-slate-50 p-4 md:p-8 font-sans">
@@ -45,8 +46,7 @@
             </div>
         </section>
 
-        <div id="channelsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-            </div>
+        <div id="channelsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10"></div>
 
         <div class="flex flex-col items-center border-t pt-8">
             <button onclick="calculateOTS()" class="bg-red-600 text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-red-700 transition-all transform hover:scale-105 shadow-lg shadow-red-200">
@@ -77,7 +77,7 @@
                 <p><strong>1. Modello di Agostini (Random Duplication):</strong> In assenza di matrici di duplicazione reali, il sistema utilizza la probabilità composta per calcolare la Reach Netta. La formula assume che l'esposizione tra i canali sia indipendente.</p>
                 <p><strong>2. Gerarchia dei Dati:</strong> Il tool dà priorità ai GRP per il calcolo della pressione. In assenza di GRP e Reach, utilizza l'OTS diretta moltiplicandola per pesi standard di Reach incrementale stimata per canale.</p>
                 <p><strong>3. Calcolo del Peso (Weighting):</strong> I pesi applicati modificano l'impatto dei GRP sulla frequenza finale.</p>
-		<p><strong>4. Raccomandazione Strategica:</strong> Usa il campo "Peso Canale" per riflettere la qualità dell'Inventory. Se pianifichi YouTube Unskippable o Prime Time TV, sposta il peso a 1.2 o 1.3. Se pianifichi Social Display a basso impatto, riduci il peso a 0.8 per ottenere un'OTS "ponderata" che rifletta meglio il reale impatto sul business.</p>
+                <p><strong>4. Raccomandazione Strategica:</strong> Usa il campo "Peso Canale" per riflettere la qualità dell'Inventory. Se pianifichi YouTube Unskippable o Prime Time TV, sposta il peso a 1.2 o 1.3. Se pianifichi Social Display a basso impatto, riduci il peso a 0.8.</p>
                 
                 <div class="bg-amber-50 p-4 rounded-lg border border-amber-100 mt-6">
                     <h3 class="font-bold text-amber-800 mb-2 text-sm uppercase">Rischi di Saturazione (Wear-out)</h3>
@@ -87,7 +87,6 @@
                         <li><strong>3 Settimane:</strong> Saturazione sopra OTS 10-12</li>
                         <li><strong>4 Settimane:</strong> Saturazione sopra OTS 12-15</li>
                     </ul>
-                    <p class="mt-2 text-xs italic">Superati questi limiti, il piano rischia di diventare inefficiente e aumentare il rischio di sentiment negativo</p>
                 </div>
             </div>
             <button onclick="toggleModal('infoModal')" class="mt-8 w-full bg-slate-800 text-white py-3 rounded-lg font-bold">Chiudi</button>
@@ -96,13 +95,33 @@
 
     <script>
         const channels = ["TV", "CTV", "OOH", "Radio", "Cinema", "Social", "Spotify", "Facebook", "Instagram", "Youtube", "TikTok", "Podcast"];
+        
+        const channelIcons = {
+            "TV": `<svg viewBox="0 0 24 24"><path d="M21,17H3V5H21M21,3H3A2,2 0 0,0 1,5V17A2,2 0 0,0 3,19H8V21H16V19H21A2,2 0 0,0 23,17V5A2,2 0 0,0 21,3Z"/></svg>`,
+            "CTV": `<svg viewBox="0 0 24 24"><path d="M21,17H3V5H21M21,3H3A2,2 0 0,0 1,5V17A2,2 0 0,0 3,19H8V21H16V19H21A2,2 0 0,0 23,17V5A2,2 0 0,0 21,3M10,8V14L15,11L10,8Z"/></svg>`,
+            "OOH": `<svg viewBox="0 0 24 24"><path d="M2,3H22V17H13V19H16V21H8V19H11V17H2V3M4,5V15H20V5H4Z"/></svg>`,
+            "Radio": `<svg viewBox="0 0 24 24"><path d="M20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12H20M7,20H9V12H7V20M11,20H13V12H11V20M15,20H17V12H15V20Z"/></svg>`,
+            "Cinema": `<svg viewBox="0 0 24 24"><path d="M18,4L20,8H17L15,4H13L15,8H12L10,4H8L10,8H7L5,4H4A2,2 0 0,0 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V4H18Z"/></svg>`,
+            "Social": `<svg viewBox="0 0 24 24"><path d="M16,13C15.71,13 15.38,13 15.03,13.05C16.19,13.89 17,15 17,16.5V19H23V16.5C23,14.17 18.33,13 16,13M8,13C5.67,13 1,14.17 1,16.5V19H15V16.5C15,14.17 10.33,13 8,13M8,11A3,3 0 0,0 11,8A3,3 0 0,0 8,5A3,3 0 0,0 5,8A3,3 0 0,0 8,11M16,11A3,3 0 0,0 19,8A3,3 0 0,0 16,5A3,3 0 0,0 13,8A3,3 0 0,0 16,11Z"/></svg>`,
+            "Spotify": `<svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.309-1.759-8.795-.963-.335.077-.67-.133-.746-.47-.077-.334.132-.67.47-.745 3.815-.873 7.087-.496 9.72 1.114.295.18.387.563.208.857zm1.225-2.72c-.225.367-.704.482-1.07.257-2.69-1.653-6.79-2.132-9.97-1.167-.413.125-.843-.11-.968-.523-.125-.413.11-.843.523-.968 3.636-1.102 8.15-.567 11.23 1.33.366.226.482.704.256 1.07zm.106-2.828c-3.226-1.916-8.544-2.093-11.634-1.155-.494.15-1.01-.128-1.16-.622-.15-.495.128-1.01.622-1.16 3.555-1.08 9.438-.87 13.153 1.334.444.263.59.835.327 1.28-.263.443-.834.588-1.28.324z"/></svg>`,
+            "Facebook": `<svg viewBox="0 0 24 24"><path d="M12 2.04C6.5 2.04 2 6.53 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.85C10.44 7.34 11.93 5.96 14.22 5.96C15.31 5.96 16.45 6.15 16.45 6.15V8.62H15.19C13.95 8.62 13.56 9.39 13.56 10.18V12.06H16.34L15.89 14.96H13.56V21.96A10 10 0 0 0 22 12.06C22 6.53 17.5 2.04 12 2.04Z"/></svg>`,
+            "Instagram": `<svg viewBox="0 0 24 24"><path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9M18,5.75A1.25,1.25 0 0,0 16.75,7A1.25,1.25 0 0,0 18,8.25A1.25,1.25 0 0,0 19.25,7A1.25,1.25 0 0,0 18,5.75Z"/></svg>`,
+            "Youtube": `<svg viewBox="0 0 24 24"><path d="M10,15L15.19,12L10,9V15M21.56,7.17C21.81,8.47 22,10.21 22,12C22,13.79 21.81,15.53 21.56,16.83C21.31,18.14 20.73,19.32 19.83,20.22C18.93,21.12 17.75,21.7 16.44,21.95C15.14,22.2 13.39,22.4 11.6,22.4C9.8,22.4 8.05,22.2 6.75,21.95C5.44,21.7 4.26,21.12 3.36,20.22C2.46,19.32 1.88,18.14 1.63,16.83C1.38,15.53 1.19,13.79 1.19,12C1.19,10.21 1.38,8.47 1.63,7.17C1.88,5.86 2.46,4.68 3.36,3.78C4.26,2.88 5.44,2.3 6.75,2.05C8.05,1.8 9.8,1.6 11.6,1.6C13.39,1.6 15.14,1.8 16.44,2.05C17.75,2.3 18.93,2.88 19.83,3.78C20.73,4.68 21.31,5.86 21.56,7.17Z"/></svg>`,
+            "TikTok": `<svg viewBox="0 0 24 24"><path d="M12.53,2H8.53V16.5A3.5,3.5 0 0,1 5.03,20A3.5,3.5 0 0,1 1.53,16.5A3.5,3.5 0 0,1 5.03,13H5.53V9H5.03A7.5,7.5 0 0,0 -2.47,16.5A7.5,7.5 0 0,0 5.03,24A7.5,7.5 0 0,0 12.53,16.5V7.82C13.9,8.69 15.5,9.2 17.22,9.2V5.2C16.14,5.2 15.1,4.87 14.23,4.25C13.41,3.66 12.86,2.89 12.53,2Z"/></svg>`,
+            "Podcast": `<svg viewBox="0 0 24 24"><path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/></svg>`
+        };
+
         const container = document.getElementById('channelsContainer');
 
         channels.forEach(ch => {
+            const icon = channelIcons[ch] || '';
             container.innerHTML += `
                 <div class="channel-card">
                     <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-bold text-slate-800">${ch}</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="icon-container text-red-600">${icon}</span>
+                            <h3 class="font-bold text-slate-800">${ch}</h3>
+                        </div>
                         <span class="text-[10px] bg-red-100 text-red-700 px-2 py-1 rounded-md font-bold uppercase">Canale</span>
                     </div>
                     <div class="space-y-2">
@@ -129,7 +148,6 @@
             let totalGRPs = 0;
             let probReachNonEsposta = 1;
             let activeChannels = 0;
-
             const weeks = parseInt(document.getElementById('flightWeeks').value);
 
             channels.forEach((ch, index) => {
@@ -138,24 +156,20 @@
                 let otsDirect = parseFloat(document.querySelectorAll('.ots-input')[index].value) || 0;
                 let weight = parseFloat(document.querySelectorAll('.weight-input')[index].value) || 1;
 
-                // Logica di fallback: se ho solo OTS, stimo dei GRP basati su una reach media di canale (benchmark)
                 if (otsDirect > 0 && grp === 0 && reach === 0) {
-                    reach = 0.20; // Assunzione conservativa: 20% reach per chi inserisce solo OTS
+                    reach = 0.20; 
                     grp = (reach * 100) * otsDirect;
                 }
 
                 if (grp > 0 || reach > 0) {
                     activeChannels++;
-                    
                     if (grp === 0 && reach > 0) {
                         let standardOTS = (ch === 'TV' || ch === 'Youtube') ? 5 : 3;
                         grp = (reach * 100) * standardOTS;
                     }
-                    
                     if (reach === 0 && grp > 0) {
-                        reach = Math.min((grp / 8) / 100, 0.6); // Stima cautelativa reach da GRP
+                        reach = Math.min((grp / 8) / 100, 0.6);
                     }
-
                     totalGRPs += (grp * weight);
                     probReachNonEsposta *= (1 - reach);
                 }
@@ -167,20 +181,17 @@
             }
 
             let netReach = (1 - probReachNonEsposta) * 100;
-            if (netReach > 94) netReach = 94; // Cap tecnico di mercato
-
+            if (netReach > 94) netReach = 94;
             const finalOTS = totalGRPs / netReach;
 
-            // Update UI
             document.getElementById('resGRP').innerText = Math.round(totalGRPs);
             document.getElementById('resReach').innerText = netReach.toFixed(1) + "%";
             document.getElementById('resOTS').innerText = finalOTS.toFixed(2);
             document.getElementById('resultArea').style.opacity = "1";
 
-            // Logic Alert Saturazione
             const thresholds = { 1: 5, 2: 8, 3: 11, 4: 14 };
             if (finalOTS > thresholds[weeks]) {
-                alert(`⚠️ ATTENZIONE: SATURAZIONE RILEVATA\n\nCon un OTS di ${finalOTS.toFixed(2)} in un flight di ${weeks} settiman${weeks==1?'a':'e'}, il piano ha superato la soglia di efficienza consigliata. \n\nRischi: Dispersione economica e possibile rigetto del messaggio da parte dell'utente.`);
+                alert(`⚠️ ATTENZIONE: SATURAZIONE\n\nOTS ${finalOTS.toFixed(2)} supera la soglia di efficienza per ${weeks} settiman${weeks==1?'a':'e'}.`);
                 document.getElementById('otsCard').classList.replace('bg-red-600', 'bg-amber-500');
             } else {
                 document.getElementById('otsCard').classList.replace('bg-amber-500', 'bg-red-600');
