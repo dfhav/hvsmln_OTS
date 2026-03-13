@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Measurement Tool </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .channel-card { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; background: #f9fafb; transition: all 0.3s; }
+        .channel-card:hover { border-color: #3b82f6; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .modal { display: none; position: fixed; z-index: 50; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 5% auto; padding: 2rem; width: 80%; max-width: 700px; border-radius: 1rem; }
+    </style>
+</head>
+<body class="bg-slate-50 p-4 md:p-8 font-sans">
+    <div class="max-w-6xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-xl border border-slate-100">
+        
+        <header class="flex justify-between items-center border-b pb-6 mb-8">
+            <div>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Media - <span class="text-red-600">OTS Optimizer</span></h1>
+                <p class="text-slate-500 mt-1">Strumento per la stima della frequenza cross-media (Modello Agostini).</p>
+            </div>
+            <button onclick="toggleModal('infoModal')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-3 rounded-full transition shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </button>
+        </header>
+
+        <section class="mb-10 bg-blue-50 p-6 rounded-xl border border-blue-100">
+            <h2 class="text-sm font-bold text-blue-800 uppercase tracking-wider mb-4">Parametri del Piano</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Durata del Flight (Settimane)</label>
+                    <select id="flightWeeks" class="w-full p-3 bg-white border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="1">1 Settimana</option>
+                        <option value="2">2 Settimane</option>
+                        <option value="3">3 Settimane</option>
+                        <option value="4" selected>4 Settimane</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <p class="text-xs text-slate-500 italic">L'alert di saturazione si attiverà in base alla durata selezionata per prevenire il "creative wear-out".</p>
+                </div>
+            </div>
+        </section>
+
+        <div id="channelsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+            </div>
+
+        <div class="flex flex-col items-center border-t pt-8">
+            <button onclick="calculateOTS()" class="bg-blue-600 text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-200">
+                CALCOLA PERFORMANCE PIANO
+            </button>
+
+            <div id="resultArea" class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 w-full opacity-0 transition-opacity duration-500">
+                <div class="bg-slate-50 p-6 rounded-xl text-center border border-slate-100">
+                    <p class="text-xs uppercase text-slate-500 font-bold mb-1">Total GRPs</p>
+                    <p id="resGRP" class="text-4xl font-black text-slate-800">0</p>
+                </div>
+                <div class="bg-slate-50 p-6 rounded-xl text-center border border-slate-100">
+                    <p class="text-xs uppercase text-slate-500 font-bold mb-1">Net Reach %</p>
+                    <p id="resReach" class="text-4xl font-black text-slate-800">0%</p>
+                </div>
+                <div id="otsCard" class="bg-blue-600 p-6 rounded-xl text-center shadow-lg">
+                    <p class="text-xs uppercase text-blue-100 font-bold mb-1">OTS Totale Piano</p>
+                    <p id="resOTS" class="text-4xl font-black text-white">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="infoModal" class="modal">
+        <div class="modal-content shadow-2xl border-t-4 border-blue-600 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-2xl font-bold mb-4 text-slate-900">Analisi Tecnica e Metodologia</h2>
+            <div class="space-y-4 text-slate-600 leading-relaxed">
+                <p><strong>1. Modello di Agostini (Random Duplication):</strong> In assenza di matrici di duplicazione reali, il sistema utilizza la probabilità composta per calcolare la Reach Netta. La formula assume che l'esposizione tra i canali sia indipendente.</p>
+                <p><strong>2. Gerarchia dei Dati:</strong> Il tool dà priorità ai GRP per il calcolo della pressione. In assenza di GRP e Reach, utilizza l'OTS diretta moltiplicandola per pesi standard di Reach incrementale stimata per canale.</p>
+                <p><strong>3. Calcolo del Peso (Weighting):</strong> I pesi applicati modificano l'impatto dei GRP sulla frequenza finale, simulando differenze di "Attention Score" tra mezzi (es: un OTS video ha un peso qualitativo diverso da un OTS OOH).</p>
+		<p><strong>4. Raccomandazione Strategica:</strong> Usa il campo "Peso Canale" per riflettere la qualità dell'Inventory. Se pianifichi YouTube Unskippable o Prime Time TV, sposta il peso a 1.2 o 1.3. Se pianifichi Social Display a basso impatto, riduci il peso a 0.8 per ottenere un'OTS "ponderata" che rifletta meglio il reale impatto sul business.</p>
+                
+                <div class="bg-amber-50 p-4 rounded-lg border border-amber-100 mt-6">
+                    <h3 class="font-bold text-amber-800 mb-2 text-sm uppercase">Rischi di Saturazione (Wear-out)</h3>
+                    <ul class="list-disc pl-5 text-sm space-y-1 text-amber-900">
+                        <li><strong>1 Settimana:</strong> Saturazione sopra OTS 4-5.</li>
+                        <li><strong>2 Settimane:</strong> Saturazione sopra OTS 7-8.</li>
+                        <li><strong>3 Settimane:</strong> Saturazione sopra OTS 10-12.</li>
+                        <li><strong>4 Settimane:</strong> Saturazione sopra OTS 12-15.</li>
+                    </ul>
+                    <p class="mt-2 text-xs italic">Superati questi limiti, il costo marginale per convertire l'attenzione diventa inefficiente e aumenta il rischio di sentiment negativo verso il brand.</p>
+                </div>
+            </div>
+            <button onclick="toggleModal('infoModal')" class="mt-8 w-full bg-slate-800 text-white py-3 rounded-lg font-bold">Chiudi</button>
+        </div>
+    </div>
+
+    <script>
+        const channels = ["TV", "CTV", "OOH", "Radio", "Cinema", "Social", "Spotify", "Facebook", "Instagram", "Youtube", "TikTok", "Podcast"];
+        const container = document.getElementById('channelsContainer');
+
+        channels.forEach(ch => {
+            container.innerHTML += `
+                <div class="channel-card">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-slate-800">${ch}</h3>
+                        <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded-md font-bold uppercase">Canale</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="number" placeholder="GRP" class="grp-input w-full p-2 text-sm border rounded-md" data-channel="${ch}">
+                            <input type="number" placeholder="Reach %" class="reach-input w-full p-2 text-sm border rounded-md" data-channel="${ch}">
+                        </div>
+                        <input type="number" placeholder="Solo OTS (opzionale)" class="ots-input w-full p-2 text-sm border rounded-md bg-white border-dashed" data-channel="${ch}">
+                        <div class="pt-2">
+                            <label class="text-[10px] text-slate-500 font-bold uppercase">Peso Canale: <span id="val-${ch}" class="text-blue-600">1.0</span></label>
+                            <input type="range" min="0.5" max="2.0" step="0.1" value="1.0" class="weight-input w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer" oninput="document.getElementById('val-${ch}').innerText = this.value" data-channel="${ch}">
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        function toggleModal(id) {
+            const m = document.getElementById(id);
+            m.style.display = (m.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function calculateOTS() {
+            let totalGRPs = 0;
+            let probReachNonEsposta = 1;
+            let activeChannels = 0;
+
+            const weeks = parseInt(document.getElementById('flightWeeks').value);
+
+            channels.forEach((ch, index) => {
+                let grp = parseFloat(document.querySelectorAll('.grp-input')[index].value) || 0;
+                let reach = parseFloat(document.querySelectorAll('.reach-input')[index].value) / 100 || 0;
+                let otsDirect = parseFloat(document.querySelectorAll('.ots-input')[index].value) || 0;
+                let weight = parseFloat(document.querySelectorAll('.weight-input')[index].value) || 1;
+
+                // Logica di fallback: se ho solo OTS, stimo dei GRP basati su una reach media di canale (benchmark)
+                if (otsDirect > 0 && grp === 0 && reach === 0) {
+                    reach = 0.20; // Assunzione conservativa: 20% reach per chi inserisce solo OTS
+                    grp = (reach * 100) * otsDirect;
+                }
+
+                if (grp > 0 || reach > 0) {
+                    activeChannels++;
+                    
+                    if (grp === 0 && reach > 0) {
+                        let standardOTS = (ch === 'TV' || ch === 'Youtube') ? 5 : 3;
+                        grp = (reach * 100) * standardOTS;
+                    }
+                    
+                    if (reach === 0 && grp > 0) {
+                        reach = Math.min((grp / 8) / 100, 0.6); // Stima cautelativa reach da GRP
+                    }
+
+                    totalGRPs += (grp * weight);
+                    probReachNonEsposta *= (1 - reach);
+                }
+            });
+
+            if (activeChannels === 0) {
+                alert("Per favore, inserisci i dati di almeno un canale per procedere.");
+                return;
+            }
+
+            let netReach = (1 - probReachNonEsposta) * 100;
+            if (netReach > 94) netReach = 94; // Cap tecnico di mercato
+
+            const finalOTS = totalGRPs / netReach;
+
+            // Update UI
+            document.getElementById('resGRP').innerText = Math.round(totalGRPs);
+            document.getElementById('resReach').innerText = netReach.toFixed(1) + "%";
+            document.getElementById('resOTS').innerText = finalOTS.toFixed(2);
+            document.getElementById('resultArea').style.opacity = "1";
+
+            // Logic Alert Saturazione
+            const thresholds = { 1: 5, 2: 8, 3: 11, 4: 14 };
+            if (finalOTS > thresholds[weeks]) {
+                alert(`⚠️ ATTENZIONE: SATURAZIONE RILEVATA\n\nCon un OTS di ${finalOTS.toFixed(2)} in un flight di ${weeks} settiman${weeks==1?'a':'e'}, il piano ha superato la soglia di efficienza consigliata. \n\nRischi: Dispersione economica e possibile rigetto del messaggio da parte dell'utente.`);
+                document.getElementById('otsCard').classList.replace('bg-blue-600', 'bg-amber-500');
+            } else {
+                document.getElementById('otsCard').classList.replace('bg-amber-500', 'bg-blue-600');
+            }
+        }
+    </script>
+</body>
+</html>
